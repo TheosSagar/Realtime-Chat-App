@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const Login = () => {
   const [isLoginMode, setIsLoginMode] = useState(true)
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -60,6 +62,7 @@ const Login = () => {
 
       if (data.token) {
         localStorage.setItem('token', data.token)
+        navigate('/dashboard')
       }
     } catch (error) {
       setMessage('Cannot connect to server')
