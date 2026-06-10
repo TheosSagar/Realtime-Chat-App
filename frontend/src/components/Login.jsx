@@ -2,6 +2,13 @@ import React, { useState } from 'react'
 
 const Login = () => {
   const [isLoginMode, setIsLoginMode] = useState(true)
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  })
+  const [message, setMessage] = useState('')
 
   const inputClass =
     'w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-200'
@@ -12,8 +19,51 @@ const Login = () => {
   const submitButtonClass =
     'w-full rounded-lg bg-purple-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-purple-700'
 
-  const handleSubmit = (event) => {
+  const handleChange = (event) => {
+    setFormData({
+      ...formData,
+      [event.target.name]: event.target.value,
+    })
+  }
+
+  const handleSubmit = async (event) => {
     event.preventDefault()
+
+    const url = isLoginMode
+      ? 'http://localhost:5000/api/auth/login'
+      : 'http://localhost:5000/api/auth/signup'
+
+    const bodyData = isLoginMode
+      ? {
+          email: formData.email,
+          password: formData.password,
+        }
+      : formData
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bodyData),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setMessage(data.message || 'Something went wrong')
+        return
+      }
+
+      setMessage(data.message)
+
+      if (data.token) {
+        localStorage.setItem('token', data.token)
+      }
+    } catch (error) {
+      setMessage('Cannot connect to server')
+    }
   }
 
   return (
@@ -61,6 +111,8 @@ const Login = () => {
               type="text"
               name="name"
               placeholder="Name"
+              value={formData.name}
+              onChange={handleChange}
               required
             />
           )}
@@ -72,6 +124,8 @@ const Login = () => {
             type="email"
             name="email"
             placeholder="E-mail"
+            value={formData.email}
+            onChange={handleChange}
             required
           />
           <input
@@ -79,6 +133,8 @@ const Login = () => {
             type="password"
             name="password"
             placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
             required
           />
 
@@ -88,8 +144,16 @@ const Login = () => {
               type="password"
               name="confirmPassword"
               placeholder="Confirm password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
               required
             />
+          )}
+
+          {message && (
+            <p className="text-center text-sm text-gray-600">
+              {message}
+            </p>
           )}
 
           <button className={submitButtonClass} type="submit">
