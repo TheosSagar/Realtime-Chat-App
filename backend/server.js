@@ -1,20 +1,12 @@
-require('dotenv').config(); // To use code inside .env
+require('dotenv').config();
 
-const express = require('express');
-const connectDB = require('./src/config/db')
+const app = require('./src/app');
+const connectDB = require('./src/config/db');
+
+const PORT = process.env.PORT || 5000;
 
 connectDB();
 
-const app = express();
-
-app.use(express.json());
-
-app.get('/', (req, res) => {
-    res.send("Chat API running");
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
-
-const port = process.env.PORT || 5000;
-
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
-})
