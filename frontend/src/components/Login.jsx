@@ -43,6 +43,15 @@ const Login = () => {
           <button>{isLoginMode? 'Login' : 'Sign Up'}</button>
         </div>
 
+        {/* Switch */}
+
+        <p>
+          {isLoginMode ? "Don't have an account?" : "Already have and account?"}
+          <a href="#" onClick={() => {
+            setIsLoginMode(!isLoginMode)
+          }}>{isLoginMode ? "Sign Up" : "Login"}</a>
+        </p>
+
       </form>
     </div>
   )
