@@ -8,6 +8,8 @@ function Dashboard() {
   const [selectedUser, setSelectedUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  const token = localStorage.getItem('token')
+
   const handleLogout = () => {
     localStorage.removeItem('token')
     navigate('/')
@@ -15,7 +17,11 @@ function Dashboard() {
 
   const getAllUsers = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/users/getUsers')
+      const response = await fetch('http://localhost:5000/api/users/getUsers' ,{
+        headers:{
+          Authorization: `Bearer ${token}`,
+        },
+      })
 
       const data = await response.json()
 
