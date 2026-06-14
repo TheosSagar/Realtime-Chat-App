@@ -7,7 +7,7 @@ const onlineUsers = new Map()
 const initSocket = (server) => {
   io = new Server(server, {
     cors: {
-      origin: ['http://localhost:3000', 'http://localhost:5173'],
+      origin: ['http://localhost:3000', 'realtime-chat-app-two-alpha.vercel.app'],
       methods: ['GET', 'POST'],
       credentials: true,
     },

@@ -6,7 +6,16 @@ const messageRoutes = require('./routes/messageRoutes')
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      'http://localhost:3000',
+      'realtime-chat-app-two-alpha.vercel.app'
+    ],
+    credentials: true,
+  })
+)
+
 app.use(express.json());
 
 app.get('/', (req, res) => {
