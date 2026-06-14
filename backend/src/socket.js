@@ -5,9 +5,21 @@ let io
 const onlineUsers = new Map()
 
 const initSocket = (server) => {
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    process.env.FRONTEND_URL,
+  ].filter(Boolean)
+
   io = new Server(server, {
     cors: {
-      origin: ['http://localhost:3000', 'http://realtime-chat-app-two-alpha.vercel.app'],
+      origin: (origin, callback) => {
+        if (!origin) return callback(null, true)
+        if (allowedOrigins.includes(origin)) {
+          return callback(null, true)
+        }
+        callback(new Error(`Socket CORS policy does not allow access from ${origin}`))
+      },
       methods: ['GET', 'POST'],
       credentials: true,
     },

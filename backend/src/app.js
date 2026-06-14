@@ -6,12 +6,21 @@ const messageRoutes = require('./routes/messageRoutes')
 
 const app = express();
 
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  process.env.FRONTEND_URL,
+].filter(Boolean)
+
 app.use(
   cors({
-    origin: [
-      'http://localhost:3000',
-      'http://realtime-chat-app-two-alpha.vercel.app'
-    ],
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true)
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true)
+      }
+      callback(new Error(`CORS policy does not allow access from ${origin}`))
+    },
     credentials: true,
   })
 )
