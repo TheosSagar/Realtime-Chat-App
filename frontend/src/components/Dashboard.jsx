@@ -10,8 +10,12 @@ function Dashboard() {
   const [messages, setMessages] = useState([])
   const [messageText, setMessageText] = useState('')
   const [loading, setLoading] = useState(true)
+  const [onlineUsers, setOnlineUsers] = useState([])
+  const [unreadCounts, setUnreadCounts] = useState({})
+  const [notification, setNotification] = useState(null)
   const socketRef = useRef(null)
   const selectedUserRef = useRef(selectedUser)
+  const usersRef = useRef(users)
   const messagesEndRef = useRef(null)
 
   const handleLogout = () => {
@@ -109,8 +113,28 @@ function Dashboard() {
 
   const handleSelectUser = (user) => {
     setSelectedUser(user)
+    setUnreadCounts((prev) => {
+      const next = { ...prev }
+      delete next[user._id]
+      return next
+    })
+    setNotification((prev) => (prev?.senderId === user._id ? null : prev))
     getMessages(user._id)
   }
+
+  useEffect(() => {
+    usersRef.current = users
+  }, [users])
+
+  useEffect(() => {
+    if (!notification) return
+
+    const timer = setTimeout(() => {
+      setNotification(null)
+    }, 3000)
+
+    return () => clearTimeout(timer)
+  }, [notification])
 
   useEffect(() => {
     selectedUserRef.current = selectedUser
@@ -129,11 +153,34 @@ function Dashboard() {
     })
 
     socket.on('receiveMessage', (message) => {
-      if (selectedUserRef.current && message.senderId === selectedUserRef.current._id) {
+      const senderId = message.senderId
+      if (selectedUserRef.current && senderId === selectedUserRef.current._id) {
         setMessages((prev) => [...prev, message])
       } else {
-        console.log('Incoming message for other user', message)
+        setUnreadCounts((prev) => ({
+          ...prev,
+          [senderId]: (prev[senderId] || 0) + 1,
+        }))
+
+        const sender = usersRef.current.find((user) => user._id === senderId)
+        setNotification({
+          senderName: sender?.name || 'New message',
+          text: message.text,
+          senderId,
+        })
       }
+    })
+
+    socket.on('onlineUsers', (online) => {
+      setOnlineUsers(online)
+    })
+
+    socket.on('userOnline', (userId) => {
+      setOnlineUsers((prev) => Array.from(new Set([...prev, userId])))
+    })
+
+    socket.on('userOffline', (userId) => {
+      setOnlineUsers((prev) => prev.filter((id) => id !== userId))
     })
 
     socketRef.current = socket
@@ -163,6 +210,12 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      {notification && (
+        <div className="fixed bottom-4 right-4 z-50 w-full max-w-xs rounded-xl bg-blue-600 px-4 py-3 text-white shadow-lg sm:right-6">
+          <p className="font-semibold">{notification.senderName}</p>
+          <p className="mt-1 text-sm">{notification.text}</p>
+        </div>
+      )}
       <div className="flex h-screen flex-col md:flex-row">
         <div className={`${selectedUser ? 'hidden' : 'block'} w-full md:block md:w-80 border-b border-gray-200 bg-white md:border-b-0 md:border-r`}>
           <div className="flex items-center justify-between border-b border-gray-200 p-4">
@@ -192,8 +245,23 @@ function Dashboard() {
                     selectedUser?._id === user._id ? 'bg-gray-100' : ''
                   }`}
                 >
-                  <h3 className="font-medium text-gray-900">{user.name}</h3>
-                  <p className="text-sm text-gray-500">{user.email}</p>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      {onlineUsers.includes(user._id) && (
+                        <span className="h-2.5 w-2.5 rounded-full bg-green-500 ring-1 ring-white" />
+                      )}
+                      <div>
+                        <h3 className="font-medium text-gray-900">{user.name}</h3>
+                        <p className="text-sm text-gray-500">{user.email}</p>
+                      </div>
+                    </div>
+
+                    {unreadCounts[user._id] > 0 && (
+                      <span className="rounded-full bg-blue-500 px-2 py-0.5 text-xs font-semibold text-white">
+                        {unreadCounts[user._id]}
+                      </span>
+                    )}
+                  </div>
                 </button>
               ))}
             </div>
