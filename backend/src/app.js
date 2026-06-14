@@ -10,7 +10,7 @@ app.use(
   cors({
     origin: [
       'http://localhost:3000',
-      'realtime-chat-app-two-alpha.vercel.app'
+      'http://realtime-chat-app-two-alpha.vercel.app'
     ],
     credentials: true,
   })
