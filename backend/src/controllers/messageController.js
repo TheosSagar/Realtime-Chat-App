@@ -1,35 +1,42 @@
 const Message = require('../models/Message')
+const { getIo, getOnlineUsers } = require('../socket')
 
 // Send message
-const sendMessage = async(req, res) => {
-    try{
-        const senderId = req.user._id;
-        const { receiverId } = req.params;
-        const {text} = req.body;
+const sendMessage = async (req, res) => {
+  try {
+    const senderId = req.user._id
+    const { receiverId } = req.params
+    const { text } = req.body
 
-        if(!text) {
-            return res.status(400).json({
-                message: 'Message text is required',
-                
-            })
-        }
-
-        const newMessage = await Message.create({ // Saves the data as new document in collection
-            senderId,
-            receiverId,
-            text,
-        })
-
-        res.status(201).json({
-            message: 'Message sent successfully',
-            newMessage,
-        })
-    }catch(error){
-        res.status(500).json({
-            message: 'Server error',
-        })
+    if (!text) {
+      return res.status(400).json({
+        message: 'Message text is required',
+      })
     }
 
+    const newMessage = await Message.create({
+      senderId,
+      receiverId,
+      text,
+    })
+
+    const onlineUsers = getOnlineUsers()
+    const receiverSocketId = onlineUsers.get(receiverId.toString())
+
+    if (receiverSocketId) {
+      const io = getIo()
+      io.to(receiverSocketId).emit('receiveMessage', newMessage)
+    }
+
+    res.status(201).json({
+      message: 'Message sent successfully',
+      newMessage,
+    })
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error',
+    })
+  }
 }
 
 // get message
