@@ -27,7 +27,7 @@ function Dashboard() {
     try {
       const token = localStorage.getItem('token')
 
-      const response = await fetch('http://localhost:5000/api/users/getUsers', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/getUsers`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -51,7 +51,7 @@ function Dashboard() {
     try {
       const token = localStorage.getItem('token')
 
-      const response = await fetch(`http://localhost:5000/api/messages/${userId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/messages/${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -79,7 +79,7 @@ function Dashboard() {
       const token = localStorage.getItem('token')
 
       const response = await fetch(
-        `http://localhost:5000/api/messages/send/${selectedUser._id}`,
+        `${import.meta.env.VITE_API_URL}/api/messages/send/${selectedUser._id}`,
         {
           method: 'POST',
           headers: {
@@ -144,7 +144,7 @@ function Dashboard() {
     const token = localStorage.getItem('token')
     if (!token) return
 
-    const socket = io('http://localhost:5000', {
+    const socket = io(import.meta.env.VITE_API_URL, {
       auth: { token },
     })
 
