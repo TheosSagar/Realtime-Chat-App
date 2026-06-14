@@ -7,7 +7,7 @@ const onlineUsers = new Map()
 const initSocket = (server) => {
   io = new Server(server, {
     cors: {
-      origin: 'http://localhost:3000',
+      origin: ['http://localhost:3000', 'http://localhost:5173'],
       methods: ['GET', 'POST'],
       credentials: true,
     },
@@ -32,8 +32,13 @@ const initSocket = (server) => {
     const userId = socket.userId
     onlineUsers.set(userId.toString(), socket.id)
 
+    io.emit('userOnline', userId.toString())
+    io.emit('onlineUsers', Array.from(onlineUsers.keys()))
+
     socket.on('disconnect', () => {
       onlineUsers.delete(userId.toString())
+      io.emit('userOffline', userId.toString())
+      io.emit('onlineUsers', Array.from(onlineUsers.keys()))
     })
   })
 
