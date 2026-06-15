@@ -8,6 +8,7 @@ function Dashboard() {
   const [users, setUsers] = useState([])
   const [selectedUser, setSelectedUser] = useState(null)
   const [messages, setMessages] = useState([])
+  const [currentUser, setCurrentUser] = useState(null)
   const [messageText, setMessageText] = useState('')
   const [loading, setLoading] = useState(true)
   const [onlineUsers, setOnlineUsers] = useState([])
@@ -20,6 +21,7 @@ function Dashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem('token')
+    localStorage.removeItem('user')
     navigate('/')
   }
 
@@ -206,6 +208,10 @@ function Dashboard() {
 
   useEffect(() => {
     getAllUsers()
+    const storedUser = localStorage.getItem('user')
+    if (storedUser) {
+      setCurrentUser(JSON.parse(storedUser))
+    }
   }, [])
 
   return (
@@ -219,7 +225,12 @@ function Dashboard() {
       <div className="flex h-screen flex-col md:flex-row">
         <div className={`${selectedUser ? 'hidden' : 'block'} w-full md:block md:w-80 border-b border-gray-200 bg-white md:border-b-0 md:border-r`}>
           <div className="flex items-center justify-between border-b border-gray-200 p-4">
-            <h2 className="text-lg font-semibold text-gray-900">Users</h2>
+            <div>
+              <p className="text-xs text-gray-500">Signed in as</p>
+              <h2 className="text-lg font-semibold text-gray-900">
+                {currentUser?.name || 'User'}
+              </h2>
+            </div>
 
             <button
               onClick={handleLogout}
